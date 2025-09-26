@@ -4,90 +4,14 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>64-Character Unique ID Page</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 2rem;
-    background: #f0f4f8;
-    color: #333;
-  }
-  header {
-    margin-bottom: 1.5rem;
-  }
-  #whatever {
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-  h1 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.8rem;
-  }
-  #unique-id {
-    font-weight: bold;
-    color: #fa75e8;
-    font-family: 'Courier New', Courier, monospace;
-    word-break: break-all;
-  }
-  a.button {
-    display: inline-block;
-    margin-top: 1.5rem;
-    padding: 0.5rem 1rem;
-    text-decoration: none;
-    background: #1a73e8;
-    color: white;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-    user-select: none;
-  }
-  a.button:hover, a.button:focus {
-    background: #155ab6;
-  }
-</style>
 </head>
 <body>
-<header>
   <h1>64-Character Unique Page ID</h1>
   <div id="whatever">
   <p>
   d
-  <p>
-  d
-  <p>
-  d
-  <p>
-  d
-  <p>
-  d
-  <p>
-  d
-  <p>
-  d
-  <p>
-  d
-  <p>
-  d
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
-  <p>
   </div>
-  
   <div>This page's unique ID is:<br/><code id="unique-id"></code></div>
- 
-</header>
 
 <a href="#" id="open-new-tab" class="button">Open New Tab with Derived Unique ID</a>
 
@@ -164,7 +88,6 @@
     while(bi > 0n) {
       let rem = bi % base;
       bi = bi / base;
-      //chars.push(base62chars[Number(rem)]);
       chars.push(base64chars[Number(rem)]);
     }
     while(chars.length < length) chars.push('0'); // pad with '0'
