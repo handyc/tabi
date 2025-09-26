@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>64-Character Unique ID Page</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 2rem;
+    background: #f0f4f8;
+    color: #333;
+  }
+  header {
+    margin-bottom: 1.5rem;
+  }
+  #whatever {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.8rem;
+  }
+  #unique-id {
+    font-weight: bold;
+    color: #fa75e8;
+    font-family: 'Courier New', Courier, monospace;
+    word-break: break-all;
+  }
+  a.button {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    background: #1a73e8;
+    color: white;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+    user-select: none;
+  }
+  a.button:hover, a.button:focus {
+    background: #155ab6;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>64-Character Unique Page ID</h1>
+  <div id="whatever">
+  <p>
+  d
+  <p>
+  d
+  <p>
+  d
+  <p>
+  d
+  <p>
+  d
+  <p>
+  d
+  <p>
+  d
+  <p>
+  d
+  <p>
+  d
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  <p>
+  </div>
+  
+  <div>This page's unique ID is:<br/><code id="unique-id"></code></div>
+ 
+</header>
+
+<a href="#" id="open-new-tab" class="button">Open New Tab with Derived Unique ID</a>
+
+<script>
+(() => {
+  // Base64 URL-safe alphabet for encoding
+  const base64urlChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.";
+
+  // Generate random bytes
+  function randomBytes(length) {
+    if (window.crypto && window.crypto.getRandomValues) {
+      const arr = new Uint8Array(length);
+      window.crypto.getRandomValues(arr);
+      return arr;
+    }
+    // fallback (not cryptographically secure)
+    const arr = new Uint8Array(length);
+    for(let i=0;i<length;i++) arr[i] = Math.floor(Math.random()*256);
+    return arr;
+  }
+
+  // Convert byte array (Uint8Array) to base64url string (without padding)
+  function bytesToBase64Url(bytes) {
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    let base64 = btoa(binary);
+    // Convert base64 to base64url
+    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  // Convert ArrayBuffer/Uint8Array to string UTF-8 encoded
+  function ab2str(buf) {
+    return new TextDecoder().decode(buf);
+  }
+
+  // Convert string to Uint8Array UTF-8 encoded
+  function str2ab(str) {
+    return new TextEncoder().encode(str);
+  }
+
+  // Async SHA-256 hashing of a Uint8Array or string (returns Uint8Array)
+  async function sha256(data) {
+    let buffer;
+    if (data instanceof Uint8Array) {
+      buffer = data.buffer;
+    } else if (typeof data === "string") {
+      buffer = str2ab(data).buffer;
+    } else if (data instanceof ArrayBuffer) {
+      buffer = data;
+    } else {
+      throw new Error("Unsupported data type for sha256");
+    }
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    return new Uint8Array(hashBuffer);
+  }
+
+  const base64chars = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-.";
+
+  // Converts Uint8Array to a BigInt
+  function bytesToBigInt(bytes) {
+    let bi = 0n;
+    for(let i = 0; i < bytes.length; i++) {
+      bi = (bi << 8n) + BigInt(bytes[i]);
+    }
+    return bi;
+  }
+  
+  function bigIntToBase64(bi, length) {
+    //let base = 62n;
+    let base = 64n;
+    let chars = [];
+    while(bi > 0n) {
+      let rem = bi % base;
+      bi = bi / base;
+      //chars.push(base62chars[Number(rem)]);
+      chars.push(base64chars[Number(rem)]);
+    }
+    while(chars.length < length) chars.push('0'); // pad with '0'
+    return chars.reverse().join('');
+  }
+
+  // Derive 64-char alphanumeric ID from arbitrary input string
+  // by hashing input + random salt, then base64 encoding
+  async function deriveId(inputStr) {
+    // inputStr + timestamp + 6 random bytes
+    const timestamp = Date.now().toString();
+    // Generate 6 random bytes salt (~48 bits)
+    const salt = randomBytes(6);
+    // Compose input buffer: inputStr UTF8 bytes + timestamp UTF8 bytes + salt
+    const inputBytes = str2ab(inputStr + timestamp);
+    const combined = new Uint8Array(inputBytes.length + salt.length);
+    combined.set(inputBytes, 0);
+    combined.set(salt, inputBytes.length);
+
+    // Hash combined input
+    const hash = await sha256(combined);
+
+    // Convert hash (32 bytes) + salt(6 bytes) = 38 bytes total
+    const totalBytes = new Uint8Array(hash.length + salt.length);
+    totalBytes.set(hash, 0);
+    totalBytes.set(salt, hash.length);
+    // totalBytes length = 38 bytes = 304 bits
+
+    const bi = bytesToBigInt(totalBytes);
+
+    return bigIntToBase64(bi, 64);
+  }
+
+  // Generate root ID similarly: random 38 bytes -> base62 to 64 chars
+  async function generateRootId() {
+    // random 38 bytes
+    const rand = randomBytes(38);
+    const bi = bytesToBigInt(rand);
+
+    return bigIntToBase64(bi, 64);
+  }
+
+  // Get current ID from location.hash (expect 64 chars alphanumeric)
+  function getIdFromHash() {
+    let h = location.hash;
+    if (h && h.startsWith('#') && h.length > 1) {
+      const id = decodeURIComponent(h.slice(1));
+      if (/^[0-9A-Za-z]{64}$/.test(id)) return id;
+    }
+    return null;
+  }
+
+  // Set or replace location.hash
+  function setHashId(id, replace = false) {
+    if (replace) {
+      history.replaceState(null, '', '#' + encodeURIComponent(id));
+    } else {
+      location.hash = '#' + encodeURIComponent(id);
+    }
+  }
+
+  async function main() {
+    let currentId = getIdFromHash();
+    if (!currentId) {
+      currentId = await generateRootId();
+      setHashId(currentId, true);
+    }
+
+    const idSpan = document.getElementById('unique-id');
+    idSpan.textContent = currentId;
+
+    document.getElementById('open-new-tab').addEventListener('click', async e => {
+      e.preventDefault();
+
+      // Derive new ID from currentId + current time
+      const newId = await deriveId(currentId);
+
+      //const url = location.origin + location.pathname + '#' + encodeURIComponent(newId);
+      const url = location.pathname + '#' + encodeURIComponent(newId);
+      window.open(url, '_blank');
+    });
+  }
+
+  main();
+})();
+</script>
+</body>
+</html>
